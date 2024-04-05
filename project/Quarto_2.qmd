@@ -1,0 +1,228 @@
+---
+title: "Unveiling the Intersection of Economics, Politics, and Health - A BREATH Taking Analysis"
+subtitle: "Exploring the Intersection of Economic Variables, Life Expectancy, and Children seeking Medical Treatment between countries both in and out of Conflict"
+author: "Ben McInerney"
+date: "04/05/2024"
+format: 
+  html: 
+    theme: superhero
+    toc: true
+execute: 
+  echo: false
+  warning: false
+  message: false 
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+#libraries
+library(tidyverse)
+library(plotly)
+
+#data
+
+unicef_metadata <- read_csv("unicef_metadata.csv")
+unicef_indicator_2 <- read_csv("unicef_indicator_2.csv")
+
+data_join <- unicef_metadata %>%
+  full_join(unicef_indicator_2, by = c("country" = "country", "year" = "time_period"))
+```
+
+# **Introduction : The Calm Before the Storm**
+
+### ***Exploring Life Expectancy across the Globe***
+
+
+```{r}
+#| fig-cap: "<span style='color: silver; font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>**In 1960, the map of global life expectancy serves as a poignant illustration of the world's health disparities. With colors ranging from vibrant yellows to solemn reds, it paints a vivid picture of human vitality and struggle across nations. Each shade tells a story of socio-economic dynamics, healthcare access, and historical context, highlighting the complex interplay of factors influencing health outcomes. As we navigate its contours, the map becomes a compelling narrative of progress and challenges, urging us to confront inequalities and strive for a future where every individual has the opportunity to lead a long and healthy life.**"
+map_world <- map_data("world")
+
+data_join_1960 <- data_join %>%
+  filter(year == 1960)
+
+map_data_join_1960 <- full_join(data_join_1960, map_world, by = c("country" = "region"))
+ggplot(map_data_join_1960, aes(x = long, y = lat, group = group, fill = `Life expectancy at birth, total (years)`)) +
+  geom_polygon(color = "white") +
+  scale_fill_gradient(low = "red", high = "yellow", name = "Life Expectancy\n(years)", na.value = "grey90") +
+  labs(title = "World Life Expectancy in 1960",
+       subtitle = "Data Source: UNICEF",
+       caption = "Note: Some countries may be missing data") +
+  xlab("Longitude") + 
+  ylab("Latitude") +
+  theme(
+    plot.title = element_text(face = "bold", size = 24, family = "sans"),
+    axis.text = element_text(face = "bold.italic"),  
+    axis.title = element_text(face = "bold.italic"),
+    legend.title = element_text(face = "bold")) 
+```
+
+```{r}
+#| fig-cap: "**<span style='color: silver; font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>It was deemed important to analyse the evolution of life expectancy across the world as decades evolve. It is clear to see a shift in greater age of life expectancy especially amongst developing third world countries.**"
+data_join_1990 <- data_join %>%
+  filter(year == 1990)
+map_data_join_1990 <- full_join(data_join_1990, map_world, by = c("country" = "region"))
+
+ggplot(map_data_join_1990, aes(x = long, y = lat, group = group, fill = `Life expectancy at birth, total (years)`)) +
+  geom_polygon(color = "white") +
+  scale_fill_gradient(low = "red", high = "yellow", name = "Life Expectancy\n(years)", na.value = "grey90") +
+  labs(title = "World Life Expectancy in 1990",
+       subtitle = "Data Source: UNICEF",
+       caption = "Note: Some countries may be missing data") +
+  xlab("Longitude") + 
+  ylab("Latitude")+
+  theme(plot.title = element_text(face = "bold", size = 24, family = "sans"),
+        axis.text = element_text(face = "bold.italic"),  
+        axis.title = element_text(face = "bold.italic"),
+        legend.title = element_text(face = "bold")) 
+```
+
+```{r}
+#| fig-cap: "<span style='color: yellow; font-family: Helvetica, Arial, sans-serif; font-size: 16px;'>***Finally, we can see the full transition when examining the life expectancy for the world in 2010. These maps provide a backbone of information as we begin to examine countries in closer detail.***"
+data_join_2010 <- data_join %>%
+  filter(year == 2010)
+
+map_data_join_2010 <- full_join(data_join_2010, map_world, by = c("country" = "region"))
+
+ggplot(map_data_join_2010, aes(x = long, y = lat, group = group, fill = `Life expectancy at birth, total (years)`)) +
+  geom_polygon(color = "white") +
+  scale_fill_gradient(name = "Life Expectancy (years)",
+                      low = "red",   
+                      high = "yellow",  
+                      na.value = "grey90") +
+  labs(x = "Longitude", y = "Latitude",
+       title = "World Life Expectancy in 2010",
+       subtitle = "Data Source: UNICEF",
+       caption = "Note: Some countries may be missing data") +
+  theme(plot.title = element_text(face = "bold", size = 24, family = "sans"),
+        axis.text = element_text(face = "bold.italic"),  
+        axis.title = element_text(face = "bold.italic"),
+        legend.title = element_text(face = "bold"))
+```
+
+
+
+# **Chapter 2:** ***Breathing*** **Life Into Data**
+
+### *Exploring the % of Children in both war conflicted and non war conflicted countries who seek Medical Treatment for ARI symptoms*
+```{r}
+#| fig-cap: "<span style='color: yellow; font-family: Arial, sans-serif; font-size: 16px;'>**The next visual is a Bar Chart showcasing selected countries,  percentage of children (under age 5) with acute respiratory infection symptoms whom advice or treatment was sought from a health facility or provider. These countries were selected from the dataset with information available on this variable. I have chosen 6 countries who have been in conflict since the year 2000 being - Iraq, Thailand, Chad, Ethiopia, Somalia and Pakistan. I then chose 6 countries which have not seen conflict anywhere near the degree of these countries within the same period - Argentina, Malaysia, Uruguay, Paraguay, Jamaica, and South Africa. The bar chart gives an indication that conflict or war within a country may affect the % of children who seek medical treatment for ARI symptoms. We will now examine will see similar trends when examining Inflation, GDP, Life Expectancy and Military Expenditure.**"
+specific_countries_2 <- c("Iraq", "Thailand", "Chad", "Ethiopia", "Somalia", "Pakistan", "Argentina", "Malaysia", "Uruguay", "Paraguay", "Jamaica", "South Africa") 
+
+unicef_metadata_filtered_2 <- unicef_metadata %>%
+  filter(country %in% specific_countries_2)
+data_join_filtered_2 <- data_join %>%
+  filter(country %in% specific_countries_2)
+
+data_join_filtered_2 %>%
+  group_by(country) %>%
+  summarise(m_obs_value = mean(obs_value, na.rm = TRUE)) %>%
+  ggplot(aes(reorder(country, m_obs_value), m_obs_value, fill = country)) + 
+  geom_col(width = 0.8) +  
+  geom_text(aes(label = paste0(round(m_obs_value, 1), "%")), vjust = -0.5, size = 3.5) +  
+  labs(
+    x = "Country",
+    y = "% of Children Seeking Treatment",
+    fill = "",  
+    title = "% of Children Seeking Treatment for Respiratory Infection by Country"
+  ) +
+  theme_minimal(base_family = "serif") +
+  theme(
+    axis.text.x = element_blank(),
+    axis.title = element_text(size = 12, face = "bold"),
+    text = element_text(size = 12), 
+    plot.title = element_text(size = 15, face = "bold")
+  ) +
+  scale_fill_brewer(palette = "Set3") +
+  theme(panel.grid.major.y = element_line(color = "gray", linetype = "dashed"))
+
+```
+
+
+# Chapter 3: Political Respiration; Unveiling the Governments True ***BREATH*** on Children's Health
+
+## ***Exploring Economic Variables of Inflation and Military Expenditure to delve deeper into state actions...***
+```{r}
+#| fig-cap: "<span style='color:blue; font-family:Arial;font-size: 14px; font-weight: bold;'>    **Double Click on a Country in the Legend to Isolate that country.** The exploration of inflation in conflicted countries compared to non-conflicted countries unveils intriguing insights into economic dynamics amidst socio-political turbulence. In conflicted nations, where geopolitical instability often reigns, the trajectory of inflation can be volatile and erratic, influenced by factors such as fluctuating supply chains, currency devaluation, and heightened uncertainty. Conversely, in non-conflicted countries, where economic environments are relatively stable, inflation tends to follow more predictable patterns, often driven by standard macroeconomic factors like monetary policy and market demand. By juxtaposing these trends, analysts gain a deeper understanding of the nuanced interplay between conflict, governance, and economic indicators, shedding light on the resilience and vulnerabilities of different economies in the face of geopolitical upheaval. However we see unexpected outcomes due to the fact many of these countries whether in conflict or not are developing during this period."
+timeseries_plot <- data_join_filtered_2 %>%
+  ggplot() +
+  aes(year, `Inflation, consumer prices (annual %)`, color = country) +
+  geom_line() +
+  geom_line(linewidth = .8) +
+  labs(title = "Inflation Trends Across Selected Countries (1960-2020)",
+       x = "Year",
+       y = "Inflation (%)",
+       color = "Country") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(-30, 150)) +   
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),  
+    axis.title = element_text(face = "bold.italic", size = 12),  
+    axis.text = element_text(size = 10),   
+    legend.title = element_text(face = "bold.italic", size = 12),  
+    legend.text = element_text(size = 10)) +
+  scale_color_viridis_d()
+
+ggplotly(timeseries_plot)
+```
+
+
+```{r}
+#| fig-cap: "<span style='color: #009900; font-family: Times New Roman, Times, serif; font-size: 17px;'>***Double click the Country in the Legend to Isolate that Country***. The analysis of time series data on military expenditure unveils a striking pattern: conflicted countries consistently allocate a larger proportion of their resources towards military spending compared to their non-conflicted counterparts. This trend is vividly depicted in the graph, where the curves representing military expenditure for conflicted nations notably surpass those of their non-conflicted counterparts. Such disproportionate investment in military endeavors raises pertinent concerns regarding resource allocation and its implications for essential social services, particularly healthcare for children. The substantial diversion of funds towards military ventures may potentially hinder the allocation of resources to vital healthcare infrastructure, thereby exacerbating the challenges faced by children seeking medical attention. By scrutinizing these trends, policymakers gain critical insights into the trade-offs between defense spending and public welfare, facilitating informed decision-making aimed at achieving a more equitable distribution of resources for the well-being of vulnerable populations."
+timeseries_plot_2 <- data_join_filtered_2 %>%
+  ggplot() +
+  aes(year, `Military expenditure (% of GDP)`, color = country) +
+  geom_line() +
+  geom_line(linewidth = .9) +
+  labs(title = "Military Expeniture (% of GDP) from 1960 - 2022",
+       x = "Year",
+       y = "Military expenditure (% of GDP)",
+       color = "Country") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(-5, 25))+ 
+  theme(
+  plot.title = element_text(face = "bold", size = 18, hjust = 0.5),  
+  axis.title = element_text(face = "bold.italic", size = 10),  
+  axis.text = element_text(size = 8),   
+  legend.title = element_text(size = 10),  
+  legend.text = element_text(size = 8)) +
+  scale_color_brewer(palette = "Paired")
+
+
+ggplotly(timeseries_plot_2)
+```
+
+
+
+# ***Chapter 4: ECONOMIC PULSES; INHALING PERSPECTIVES, EXHALING OPPORTUNITIES***
+
+### *A closer examination of the intrinsic relationship between GDP and life Expectancy of the chosen Dataset*
+```{r}
+#| fig-cap: "**Hover over a point on the Scatterplot to see; Country, Year and GDP and Life Expectancy for that year.** *The scatterplot analysis conducted for the years 1960, 1980, 2000, and 2010 offers valuable insights into the economic disparities between conflicted and non-conflicted countries. By comparing GDP and life expectancy data for these pivotal years, discernible patterns emerge, shedding light on the potential economic determinants influencing healthcare-seeking behaviors among children with acute respiratory infection symptoms (ARI). Conflicted nations often exhibit fluctuating GDP trajectories alongside varying life expectancy rates, indicative of the profound impact of socio-political turmoil on economic stability and public health outcomes. Conversely, non-conflicted countries tend to showcase more consistent GDP growth patterns and higher life expectancy averages, reflecting the resilience of their economic and healthcare systems amidst relative stability. While this is not the case for all countries it can be seen from countries on the lower end of the scatter plot are the conflicted countries whereas the ones at the top are those not in conflict. Through this comparative analysis, researchers can gain a deeper understanding of the intricate interplay between economic dynamics and healthcare accessibility, thus paving the way for informed interventions aimed at addressing disparities in healthcare-seeking behaviors among vulnerable populations affected by conflict.*"
+filtered_data <- data_join_filtered_2 %>%
+  filter(year %in% c(1960, 1980, 2000, 2010))
+
+scatter_plot <- ggplot(filtered_data, aes(x = `GDP per capita (constant 2015 US$)`, 
+                                          y = `Life expectancy at birth, total (years)`, 
+                                          color = country,
+                                          text = paste("Year:", year))) +
+  geom_point(alpha = 0.6, size = 3) +  
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE, color = "black") +  
+  labs(title = "Scatter Plot of GDP per Capita vs. Life Expectancy",
+       x = "GDP per capita (constant 2015 US$)",
+       y = "Life Expectancy") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(labels = scales::unit_format(unit = "K", scale = .001)) +
+  theme_classic(base_family = "serif") +
+  theme(plot.title = element_text(face = "bold", size = 20, hjust = 0.5),  
+        axis.title = element_text(face = "bold.italic", size = 12),  
+        axis.text = element_text(size = 10))
+interactive_scatter_plot <- ggplotly(scatter_plot)
+interactive_scatter_plot
+```
+
+# **Conclusion**
+
+***The exploration of economic variables, health outcomes, and socio-political contexts across conflicted and non-conflicted countries reveals a complex tapestry of interconnected factors shaping global well-being. From disparities in life expectancy to divergent trends in healthcare-seeking behaviors among children, our analysis underscores the profound impact of geopolitical instability on public health dynamics. Conflicted nations, grappling with ongoing turmoil, often exhibit lower life expectancy rates and erratic healthcare-seeking patterns, reflecting the multifaceted challenges faced by vulnerable populations in accessing essential medical services. Conversely, non-conflicted countries, characterized by relative stability, demonstrate more consistent health outcomes and healthcare accessibility, indicative of the resilience of their social and economic systems. However, amidst these trends, it's essential to recognize the nuanced interplay between economic development, political governance, and public health, highlighting the need for targeted interventions aimed at addressing disparities and fostering equitable health outcomes for all. By unraveling these complexities, our analysis offers valuable insights into the intricate relationship between economics, politics, and health, paving the way for informed policymaking and interventions geared towards promoting global health equity and resilience.***
